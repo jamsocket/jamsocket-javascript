@@ -1,0 +1,38 @@
+{
+  "name": "jamsocket-javascript",
+  "scripts": {
+    "build": "tsc",
+    "dev": "npm run build -- --watch"
+  },
+  "version": "0.0.1",
+  "description": "A JS / TS library for interacting with session backends and the Jamsocket platform.",
+  "exports": {
+    "./server": "./dist/server.js",
+    "./client": "./dist/client.js",
+    "./react": "./dist/react.js",
+    "./types": "./dist/types.js"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "author": "Taylor Baldwin <taylor@driftingin.space>",
+  "homepage": "https://docs.jamsocket.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/drifting-in-space/jamsocket-javascript.git"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/react": "^18.2.14",
+    "typescript": "^5.1.6"
+  },
+  "bugs": {
+    "url": "https://github.com/drifting-in-space/jamsocket-javascript/issues"
+  },
+  "dependencies": {
+    "isomorphic-fetch": "^3.0.0",
+    "react": "^18.2.0",
+    "server-only": "^0.0.1",
+    "socket.io-client": "^4.7.1"
+  }
+}

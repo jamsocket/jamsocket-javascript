@@ -1,9 +1,13 @@
-# jamsocket-javascript
+# @jamsocket/javascript
 
-A JS / TS / React library for interacting with session backends and the Jamsocket platform.
+JavaScript/TypeScript, and React libraries for interacting with session backends and the Jamsocket platform.
+
+```sh
+npm install @jamsocket/javascript
+```
 
 ```js
-import { init } from 'jamsocket-javascript/server'
+import { init } from '@jamsocket/javascript/server'
 
 const spawnBackend = init({
   account: '[YOUR ACCOUNT]',
@@ -17,7 +21,7 @@ const spawnResult = await spawnBackend('[YOUR SERVICE]')
 ```
 
 ```jsx
-import { SessionBackendProvider } from 'jamsocket-javascript/react'
+import { SessionBackendProvider } from '@jamsocket/javascript/react'
 
 // wrap a component in a SessionBackendProvider so the child components
 // can use Jamsocket hooks for interacting with the session backend (like useEventListener, useSend, etc)
@@ -27,7 +31,7 @@ import { SessionBackendProvider } from 'jamsocket-javascript/react'
 ```
 
 ```js
-import { useEventListener, useReady, useSend } from 'jamsocket-javascript/react'
+import { useEventListener, useReady, useSend } from '@jamsocket/javascript/react'
 
 function MyComponent() {
   const sendEvent = useSend()

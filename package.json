@@ -2,10 +2,11 @@
   "name": "@jamsocket/javascript",
   "scripts": {
     "build": "tsc",
+    "clean": "rm -r dist && rm tsconfig.tsbuildinfo",
     "dev": "npm run build -- --watch",
-    "prepare": "npm run build"
+    "prepare": "npm run clean && npm run build"
   },
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "JavaScript/TypeScript, and React libraries for interacting with session backends and the Jamsocket platform.",
   "exports": {
     "./server": "./dist/server.js",

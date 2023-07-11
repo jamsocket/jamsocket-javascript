@@ -3,7 +3,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "npm run build -- --watch",
-    "prepublish": "npm run build"
+    "prepare": "npm run build"
   },
   "version": "0.1.0",
   "description": "JavaScript/TypeScript, and React libraries for interacting with session backends and the Jamsocket platform.",

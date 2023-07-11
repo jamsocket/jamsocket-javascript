@@ -11,13 +11,24 @@ import { init } from '@jamsocket/javascript/server'
 
 const spawnBackend = init({
   account: '[YOUR ACCOUNT]',
-  token: '[YOUR TOKEN]'
+  token: '[YOUR TOKEN]',
+  service: '[YOUR SERVICE]'
 })
 
 // this spawns a backend via the Jamsocket API and returns a URL you can
 // use to connect to your backend - or pass the spawnResult to a SessionBackendProvider
 // and use Jamsocket's React hooks to interact with your session backend
-const spawnResult = await spawnBackend('[YOUR SERVICE]')
+const spawnResult = await spawnBackend()
+
+// you may also pass in any of the following spawn options
+// learn more about spawn options at https://docs.jamsocket.com/api-docs/#spawn-a-service
+const spawnResult = await spawnBackend({
+  lock: 'my-lock',
+  tag: 'my-tag',
+  env: { MY_ENV_VAR: 'foo' },
+  gracePeriodSeconds: 300,
+  requireBearerToken: true
+})
 ```
 
 ```jsx

@@ -9,12 +9,28 @@ export type JamsocketInitOptions = {
   apiUrl?: string,
 }
 
+/** Passed directly to Docker as a Mount
+ * https://pkg.go.dev/github.com/docker/docker@v20.10.22+incompatible/api/types/mount#Mount
+ * 
+ * (Only works if explicitly enabled on the drone.)
+ **/
+export type VolumeMount = {
+  Source?: string,
+  Target?: string,
+  Type?: string,
+  Options?: string,
+
+  // The above list is non-exhaustive.
+  [key: string]: string | undefined,
+}
+
 export type JamsocketSpawnOptions = {
   tag?: string,
   lock?: string,
   env?: Record<string, string>,
   gracePeriodSeconds?: number,
   requireBearerToken?: boolean,
+  volumeMounts?: Array<VolumeMount>,
 }
 
 type JamsocketApiSpawnBody = {
@@ -23,6 +39,7 @@ type JamsocketApiSpawnBody = {
   env?: Record<string, string>,
   grace_period_seconds?: number,
   require_bearer_token?: boolean,
+  volume_mounts?: Array<VolumeMount>,
   port?: number,
 }
 
@@ -39,6 +56,7 @@ export function init(opts: JamsocketInitOptions) {
     if (spawnOpts.env) reqBody.env = spawnOpts.env
     if (spawnOpts.gracePeriodSeconds) reqBody.grace_period_seconds = spawnOpts.gracePeriodSeconds
     if (spawnOpts.requireBearerToken) reqBody.require_bearer_token = spawnOpts.requireBearerToken
+    if (spawnOpts.volumeMounts) reqBody.volume_mounts = spawnOpts.volumeMounts
 
     const response = await fetch(`${apiUrl}/user/${account}/service/${service}/spawn`, {
       method: 'POST',

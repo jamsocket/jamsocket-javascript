@@ -2,7 +2,7 @@
   "name": "@jamsocket/javascript",
   "scripts": {
     "build": "tsc",
-    "clean": "rm -r dist && rm tsconfig.tsbuildinfo",
+    "clean": "rm -rf dist && rm -f tsconfig.tsbuildinfo",
     "dev": "npm run build -- --watch",
     "prepare": "npm run clean && npm run build"
   },

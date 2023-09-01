@@ -3,27 +3,27 @@ import 'isomorphic-fetch' // fetch polyfill for older versions of Node
 import { SpawnResult } from './types'
 
 export type JamsocketInitOptions = {
-  account: string,
-  token: string,
-  service: string,
-  apiUrl?: string,
+  account: string
+  token: string
+  service: string
+  apiUrl?: string
 }
 
 export type JamsocketSpawnOptions = {
-  tag?: string,
-  lock?: string,
-  env?: Record<string, string>,
-  gracePeriodSeconds?: number,
-  requireBearerToken?: boolean,
+  tag?: string
+  lock?: string
+  env?: Record<string, string>
+  gracePeriodSeconds?: number
+  requireBearerToken?: boolean
 }
 
 type JamsocketApiSpawnBody = {
-  tag?: string,
-  lock?: string,
-  env?: Record<string, string>,
-  grace_period_seconds?: number,
-  require_bearer_token?: boolean,
-  port?: number,
+  tag?: string
+  lock?: string
+  env?: Record<string, string>
+  grace_period_seconds?: number
+  require_bearer_token?: boolean
+  port?: number
 }
 
 const JAMSOCKET_API = 'https://api.jamsocket.com'
@@ -44,7 +44,7 @@ export function init(opts: JamsocketInitOptions) {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify(reqBody),
-      cache: 'no-store'
+      cache: 'no-store',
     })
     if (!response.ok) {
       throw new Error(`Error spawning backend: ${response.status} ${await response.text()}`)
@@ -56,7 +56,7 @@ export function init(opts: JamsocketInitOptions) {
       readyUrl: body.ready_url,
       statusUrl: body.status_url,
       spawned: body.spawned,
-      bearerToken: body.bearer_token
+      bearerToken: body.bearer_token,
     }
   }
 }

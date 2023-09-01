@@ -2,13 +2,13 @@ import { io, Socket, ManagerOptions, SocketOptions } from 'socket.io-client'
 
 export type SocketOpts = Partial<ManagerOptions & SocketOptions>
 export type Event = {
-  event: string,
+  event: string
   args: string // these are stringified args - to freeze them in place
 }
 export type EventHandler = (...args: any[]) => void
 export type Status = string
-export type Listener = { event: string, cb: EventHandler }
-export type StatusStreamEvent = { state: Status, time: string }
+export type Listener = { event: string; cb: EventHandler }
+export type StatusStreamEvent = { state: Status; time: string }
 
 export class SessionBackend {
   private streamReader: ReadableStreamDefaultReader | null = null
@@ -19,14 +19,20 @@ export class SessionBackend {
   private listeners: Listener[] = []
   private events: Event[] = []
 
-  constructor(readonly url: string, readonly statusUrl: string, readonly socketOpts?: SocketOpts) {
+  constructor(
+    readonly url: string,
+    readonly statusUrl: string,
+    readonly socketOpts?: SocketOpts,
+  ) {
     this.waitUntilReady(statusUrl)
   }
 
   private waitUntilReady = async (statusUrl: string) => {
     const res = await fetch(statusUrl, { mode: 'cors', cache: 'no-store' })
     if (!res.ok) {
-      throw new Error(`An error occured while fetching jamsocket backend status: ${await res.text()}`)
+      throw new Error(
+        `An error occured while fetching jamsocket backend status: ${await res.text()}`,
+      )
     }
     const status = await res.text()
     if (status.includes('Ready')) {
@@ -38,7 +44,8 @@ export class SessionBackend {
     }
 
     const response = await fetch(`${statusUrl}/stream`, { cache: 'no-store' })
-    if (!response.body) throw new Error('response to Jamsocket backend status stream did not include body')
+    if (!response.body)
+      throw new Error('response to Jamsocket backend status stream did not include body')
     this.streamReader = response.body.pipeThrough(new TextDecoderStream()).getReader()
     while (this.streamReader !== null) {
       const result = await this.streamReader.read()
@@ -49,10 +56,14 @@ export class SessionBackend {
         break
       }
 
-      const messages = value.split('\n').map(v => v.trim()).filter(Boolean)
+      const messages = value
+        .split('\n')
+        .map((v) => v.trim())
+        .filter(Boolean)
 
       for (const msg of messages) {
-        if (!msg?.startsWith('data:')) throw new Error(`Unexpected message from SSE endpoint: ${msg}`)
+        if (!msg?.startsWith('data:'))
+          throw new Error(`Unexpected message from SSE endpoint: ${msg}`)
         const text = msg.slice(5).trim()
         let data: StatusStreamEvent | null = null
         try {
@@ -92,7 +103,7 @@ export class SessionBackend {
     }
     return () => {
       if (this.isReady()) return
-      this._onReady = this._onReady.filter(c => c !== cb)
+      this._onReady = this._onReady.filter((c) => c !== cb)
     }
   }
 
@@ -108,7 +119,9 @@ export class SessionBackend {
     if (this.isReady()) {
       this.socket?.off(event, cb)
     } else {
-      const idx = this.listeners.findIndex(listener => listener.event === event && listener.cb === cb)
+      const idx = this.listeners.findIndex(
+        (listener) => listener.event === event && listener.cb === cb,
+      )
       if (idx) this.listeners.splice(idx, 1)
     }
   }
@@ -125,7 +138,7 @@ export class SessionBackend {
     this.socket = io(this.url, this.socketOpts)
     this.socket.on('connect', () => {
       this._isReady = true
-      this._onReady.forEach(cb => cb())
+      this._onReady.forEach((cb) => cb())
       this._onReady = []
 
       while (this.listeners.length > 0) {

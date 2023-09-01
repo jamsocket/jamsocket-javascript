@@ -4,7 +4,13 @@ import { SpawnResult } from './types'
 
 export const SessionBackendContext = createContext<SessionBackend | null>(null)
 
-export function SessionBackendProvider({ spawnResult, children }: { spawnResult: SpawnResult, children: React.ReactNode }) {
+export function SessionBackendProvider({
+  spawnResult,
+  children,
+}: {
+  spawnResult: SpawnResult
+  children: React.ReactNode
+}) {
   const { url, statusUrl } = spawnResult
   const [backend, setBackend] = useState<SessionBackend | null>(null)
 
@@ -36,13 +42,15 @@ export function useReady(): boolean {
 
 export function useSend<T>(): (event: string, msg: T) => void {
   const backend = useContext(SessionBackendContext)
-  if (!backend) throw new Error('useEventListener must be used within a SessionBackendContext / Provider')
+  if (!backend)
+    throw new Error('useEventListener must be used within a SessionBackendContext / Provider')
   return (event, msg) => backend.send(event, msg)
 }
 
 export function useEventListener<T>(event: string, cb: (msg: T) => void) {
   const backend = useContext(SessionBackendContext)
-  if (!backend) throw new Error('useEventListener must be used within a SessionBackendContext / Provider')
+  if (!backend)
+    throw new Error('useEventListener must be used within a SessionBackendContext / Provider')
 
   useEffect(() => {
     if (!cb) return

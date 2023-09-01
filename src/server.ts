@@ -15,6 +15,7 @@ export type JamsocketSpawnOptions = {
   env?: Record<string, string>,
   gracePeriodSeconds?: number,
   requireBearerToken?: boolean,
+  stableHostname?: boolean,
 }
 
 type JamsocketApiSpawnBody = {
@@ -24,6 +25,7 @@ type JamsocketApiSpawnBody = {
   grace_period_seconds?: number,
   require_bearer_token?: boolean,
   port?: number,
+  stable_hostname?: boolean,
 }
 
 const JAMSOCKET_API = 'https://api.jamsocket.com'
@@ -39,6 +41,10 @@ export function init(opts: JamsocketInitOptions) {
     if (spawnOpts.env) reqBody.env = spawnOpts.env
     if (spawnOpts.gracePeriodSeconds) reqBody.grace_period_seconds = spawnOpts.gracePeriodSeconds
     if (spawnOpts.requireBearerToken) reqBody.require_bearer_token = spawnOpts.requireBearerToken
+
+    if (spawnOpts.stableHostname && !spawnOpts.lock) throw new Error('stableHostname requires lock to be set')
+
+    if (spawnOpts.stableHostname) reqBody.stable_hostname = spawnOpts.stableHostname
 
     const response = await fetch(`${apiUrl}/user/${account}/service/${service}/spawn`, {
       method: 'POST',

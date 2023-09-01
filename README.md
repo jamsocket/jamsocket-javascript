@@ -12,7 +12,7 @@ import { init } from '@jamsocket/javascript/server'
 const spawnBackend = init({
   account: '[YOUR ACCOUNT]',
   token: '[YOUR TOKEN]',
-  service: '[YOUR SERVICE]'
+  service: '[YOUR SERVICE]',
 })
 
 // this spawns a backend via the Jamsocket API and returns a URL you can
@@ -27,7 +27,7 @@ const spawnResult = await spawnBackend({
   tag: 'my-tag',
   env: { MY_ENV_VAR: 'foo' },
   gracePeriodSeconds: 300,
-  requireBearerToken: true
+  requireBearerToken: true,
 })
 ```
 
@@ -36,7 +36,7 @@ import { SessionBackendProvider } from '@jamsocket/javascript/react'
 
 // wrap a component in a SessionBackendProvider so the child components
 // can use Jamsocket hooks for interacting with the session backend (like useEventListener, useSend, etc)
-<SessionBackendProvider spawnResult={spawnResult}>
+;<SessionBackendProvider spawnResult={spawnResult}>
   <MyComponent />
 </SessionBackendProvider>
 ```

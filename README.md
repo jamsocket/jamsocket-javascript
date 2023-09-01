@@ -12,7 +12,7 @@ import { init } from '@jamsocket/javascript/server'
 const spawnBackend = init({
   account: '[YOUR ACCOUNT]',
   token: '[YOUR TOKEN]',
-  service: '[YOUR SERVICE]'
+  service: '[YOUR SERVICE]',
 })
 
 // this spawns a backend via the Jamsocket API and returns a URL you can
@@ -27,7 +27,7 @@ const spawnResult = await spawnBackend({
   tag: 'my-tag',
   env: { MY_ENV_VAR: 'foo' },
   gracePeriodSeconds: 300,
-  requireBearerToken: true
+  requireBearerToken: true,
 })
 ```
 

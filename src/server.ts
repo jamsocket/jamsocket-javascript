@@ -3,10 +3,10 @@ import 'isomorphic-fetch' // fetch polyfill for older versions of Node
 import { SpawnResult } from './types'
 
 export type JamsocketInitOptions = {
-  account: string,
-  token: string,
-  service: string,
-  apiUrl?: string,
+  account: string
+  token: string
+  service: string
+  apiUrl?: string
 }
 
 export type JamsocketSpawnOptions = {
@@ -50,7 +50,7 @@ export function init(opts: JamsocketInitOptions) {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify(reqBody),
-      cache: 'no-store'
+      cache: 'no-store',
     })
     if (!response.ok) {
       throw new Error(`Error spawning backend: ${response.status} ${await response.text()}`)
@@ -62,7 +62,7 @@ export function init(opts: JamsocketInitOptions) {
       readyUrl: body.ready_url,
       statusUrl: body.status_url,
       spawned: body.spawned,
-      bearerToken: body.bearer_token
+      bearerToken: body.bearer_token,
     }
   }
 }

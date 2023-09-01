@@ -5,7 +5,7 @@
     "clean": "rm -r dist && rm tsconfig.tsbuildinfo",
     "dev": "npm run build -- --watch",
     "prepare": "npm run clean && npm run build",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx}\""
   },
   "version": "0.1.1",
   "description": "JavaScript/TypeScript, and React libraries for interacting with session backends and the Jamsocket platform.",

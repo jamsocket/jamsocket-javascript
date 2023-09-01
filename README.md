@@ -36,7 +36,7 @@ import { SessionBackendProvider } from '@jamsocket/javascript/react'
 
 // wrap a component in a SessionBackendProvider so the child components
 // can use Jamsocket hooks for interacting with the session backend (like useEventListener, useSend, etc)
-;<SessionBackendProvider spawnResult={spawnResult}>
+<SessionBackendProvider spawnResult={spawnResult}>
   <MyComponent />
 </SessionBackendProvider>
 ```

@@ -135,7 +135,13 @@ export class SessionBackend {
   }
 
   private openSocket() {
-    this.socket = io(this.url, this.socketOpts)
+    const url = new URL(this.url)
+    const path =
+      url.pathname[url.pathname.length - 1] === '/'
+        ? url.pathname.substring(0, url.pathname.length - 1)
+        : url.pathname
+    const socketOpts = path ? { ...this.socketOpts, path: `${path}/socket.io/` } : this.socketOpts
+    this.socket = io(url.origin, socketOpts)
     this.socket.on('connect', () => {
       this._isReady = true
       this._onReady.forEach((cb) => cb())

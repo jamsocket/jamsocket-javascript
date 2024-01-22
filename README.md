@@ -21,7 +21,7 @@ const spawnBackend = init({
 const spawnResult = await spawnBackend()
 
 // you may also pass in any of the following spawn options
-// learn more about spawn options at https://docs.jamsocket.com/api-docs/#spawn-a-service
+// learn more about spawn options at https://docs.jamsocket.com/platform/reference#spawn-a-service
 const spawnResult = await spawnBackend({
   lock: 'my-lock',
   tag: 'my-tag',

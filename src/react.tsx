@@ -13,10 +13,11 @@ export function SessionBackendProvider({
 }) {
   const { url, statusUrl } = spawnResult
   const [backend, setBackend] = useState<SessionBackend | null>(null)
-
+  console.log("from lib", backend)
   useEffect(() => {
     setBackend(new SessionBackend(url, statusUrl))
     return () => {
+      console.log('destroying backend')
       backend?.destroy()
     }
   }, [url, statusUrl])
@@ -38,6 +39,7 @@ export function useReady(): boolean {
 
   return isReady
 }
+
 
 // export function useSend<T>(): (event: string, msg: T) => void {
 //   const backend = useContext(SessionBackendContext)

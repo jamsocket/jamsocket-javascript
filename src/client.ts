@@ -1,21 +1,11 @@
-export type Event = {
-  event: string
-  args: string // these are stringified args - to freeze them in place
-}
-export type EventHandler = (...args: any[]) => void
 export type Status = string
-export type Listener = { event: string; cb: EventHandler }
 export type StatusStreamEvent = { state: Status; time: string }
-
-console.log("test")
 
 export class SessionBackend {
   private streamReader: ReadableStreamDefaultReader | null = null
   readonly statuses: Status[] = []
   private _isReady: boolean = false
   private _onReady: (() => void)[] = []
-  private listeners: Listener[] = []
-  private events: Event[] = []
 
   constructor(
     readonly url: string,
@@ -32,6 +22,7 @@ export class SessionBackend {
       )
     }
     const status = await res.text()
+    console.log("wait until ready", status)
     if (status.includes('Ready')) {
       return
     }

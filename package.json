@@ -13,6 +13,7 @@
     "./server": "./dist/server.js",
     "./client": "./dist/client.js",
     "./react": "./dist/react.js",
+    "./socketio": "./dist/socketio.js",
     "./types": "./dist/types.js"
   },
   "files": [

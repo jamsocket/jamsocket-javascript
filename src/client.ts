@@ -22,8 +22,11 @@ export class SessionBackend {
       )
     }
     const status = await res.text()
-    console.log("wait until ready", status)
+
     if (status.includes('Ready')) {
+      this._isReady = true
+      this._onReady.forEach((cb) => cb())
+      this._onReady = []
       return
     }
     if (!status.includes('Loading') && !status.includes('Starting')) {
@@ -59,6 +62,9 @@ export class SessionBackend {
           console.error(`Error parsing status stream message as JSON: "${text}"`, e)
         }
         if (data?.state === 'Ready') {
+          this._isReady = true
+          this._onReady.forEach((cb) => cb())
+          this._onReady = []
           this.destroyStatusStream()
         }
       }

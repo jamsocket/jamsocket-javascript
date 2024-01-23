@@ -83,13 +83,13 @@ export function useSend<T>(): (newEvent: string, msg: T) => void {
     }
   }
 
-  export function useEventListener<T>(newEvent: Event, cb: (msg: T) => void) {
-    const {socket, listeners, setListeners}= useContext(SocketIOContext)
-    if (!socket) throw new Error('useReady must be used within a SessionBackendContext / Provider')
-    const ready = useReady()
-    if(ready) {
-        socket.emit(newEvent?.event, ...newEvent.args)
-    } else {
-        setListeners((listeners) => [...listeners, {event: newEvent.event, cb}])
-    }
-  }
+//   export function useEventListener<T>(newEvent: Event, cb: (msg: T) => void) {
+//     const {socket, listeners, setL isteners}= useContext(SocketIOContext)
+//     if (!socket) throw new Error('useReady must be used within a SessionBackendContext / Provider')
+//     const ready = useReady()
+//     if(ready) {
+//         socket.emit(newEvent?.event, ...newEvent.args)
+//     } else {
+//         setListeners((listeners) => [...listeners, {event: newEvent.event, cb}])
+//     }
+//   }

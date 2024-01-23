@@ -69,14 +69,17 @@ export function SocketIOProvider({
     )
   }
 
-export function useSend(newEvent: string, ...args: any[]) {
+export function useSend<T>(): (newEvent: string, msg: T) => void {
     const {socket, setEvents}= useContext(SocketIOContext)
     if (!socket) throw new Error('useReady must be used within a SessionBackendContext / Provider')
     const ready = useReady()
-    if(ready) {
-        socket.emit(newEvent, ...args)
-    } else {
-        setEvents((prevEvents) => [...prevEvents, {event: newEvent, args: JSON.stringify(args)}])
+
+    return (newEvent: string, msg: T) => {
+        if(ready) {
+            socket.emit(newEvent, msg)
+        } else {
+            setEvents((prevEvents) => [...prevEvents, {event: newEvent, args: JSON.stringify(msg)}])
+        }
     }
   }
 

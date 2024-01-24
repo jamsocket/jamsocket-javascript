@@ -6,6 +6,8 @@ JavaScript/TypeScript, and React libraries for interacting with session backends
 npm install @jamsocket/javascript
 ```
 
+### Spawning backends
+
 ```js
 import { init } from '@jamsocket/javascript/server'
 
@@ -30,6 +32,16 @@ const spawnResult = await spawnBackend({
   requireBearerToken: true,
 })
 ```
+
+When developing locally with the [Jamsocket Dev CLI](https://docs.jamsocket.com/platform/dev-cli), you may omit the `account`, `token`, and `service` fields from the `init()` options, and instead pass `dev: true`.
+
+```ts
+const spawnBackend = init({
+  dev: true
+})
+```
+
+### React Hooks
 
 ```jsx
 import { SessionBackendProvider } from '@jamsocket/javascript/react'

@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState, createContext, Dispatch, SetStateAction } from 'react'
-import { useReady } from './react'
 import { io, Socket } from 'socket.io-client'
+import { useReady } from './react'
 
 export type Event = {
     event: string
@@ -34,34 +34,42 @@ export function SocketIOProvider({
     const [socket, setSocket] = useState<Socket | null>(null)
     const [events, setEvents] = useState<Event[]>([])
     const [listeners, setListeners] = useState<Listener[]>([])
-    const ready = useReady()
+    console.log(url)
+    // useEffect(() => {
+    //     console.log(url)
+    //     if (!socket && url) {
+    //       const newSocket = io(url);
+    //       setSocket(newSocket);
+    //     }
+    //   }, [url]);
 
-    useEffect(() => {
-        if(socket && ready) {
-            socket.connect();
-            while (events.length > 0) {
-                const currentEvent = events.shift();
-                if(currentEvent?.event && currentEvent?.args) {
-                    socket.emit(currentEvent.event, JSON.parse(currentEvent.args));
-                }
-            }
-            while(listeners.length > 0) {
-                const currentListener = listeners.shift();
-                if(currentListener?.event && currentListener?.cb) {
-                    socket.on(currentListener.event, currentListener.cb);
-                }
-            }
-        } else {
-            let socket = io(url)
-            setSocket(socket)
-        }
 
-        return () => {
-            if(socket) {
-                socket.disconnect();
-            }
-        };
-    }, [url, ready])
+    // useEffect(() => {
+    //     if(socket && ready) {
+    //         socket.connect();
+    //         while (events.length > 0) {
+    //             const currentEvent = events.shift();
+    //             if(currentEvent?.event && currentEvent?.args) {
+    //                 socket.emit(currentEvent.event, JSON.parse(currentEvent.args));
+    //             }
+    //         }
+    //         while(listeners.length > 0) {
+    //             const currentListener = listeners.shift();
+    //             if(currentListener?.event && currentListener?.cb) {
+    //                 socket.on(currentListener.event, currentListener.cb);
+    //             }
+    //         }
+    //     } else {
+    //         let socket = io(url)
+    //         setSocket(socket)
+    //     }
+
+    //     return () => {
+    //         if(socket) {
+    //             socket.disconnect();
+    //         }
+    //     };
+    // }, [url, ready])
     return (
       <SocketIOContext.Provider value={{socket, events, setEvents, listeners, setListeners}}>
         {socket ? children : null}
@@ -69,22 +77,22 @@ export function SocketIOProvider({
     )
   }
 
-export function useSend<T>(): (newEvent: string, msg: T) => void {
-    const {socket, setEvents}= useContext(SocketIOContext)
-    if (!socket) throw new Error('useReady must be used within a SessionBackendContext / Provider')
-    const ready = useReady()
+// export function useSend<T>(): (newEvent: string, msg: T) => void {
+//     const {socket, setEvents}= useContext(SocketIOContext)
+//     if (!socket) throw new Error('useReady must be used within a SessionBackendContext / Provider')
+//     const ready = useReady()
 
-    return (newEvent: string, msg: T) => {
-        if(ready) {
-            socket.emit(newEvent, msg)
-        } else {
-            setEvents((prevEvents) => [...prevEvents, {event: newEvent, args: JSON.stringify(msg)}])
-        }
-    }
-  }
+//     return (newEvent: string, msg: T) => {
+//         if(ready) {
+//             socket.emit(newEvent, msg)
+//         } else {
+//             setEvents((prevEvents) => [...prevEvents, {event: newEvent, args: JSON.stringify(msg)}])
+//         }
+//     }
+//   }
 
 //   export function useEventListener<T>(newEvent: Event, cb: (msg: T) => void) {
-//     const {socket, listeners, setL isteners}= useContext(SocketIOContext)
+//     const {socket, setListeners}= useContext(SocketIOContext)
 //     if (!socket) throw new Error('useReady must be used within a SessionBackendContext / Provider')
 //     const ready = useReady()
 //     if(ready) {

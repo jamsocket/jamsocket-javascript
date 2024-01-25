@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState, createContext, Dispatch, SetStateAction } from 'react'
 import { io, Socket, ManagerOptions, SocketOptions } from 'socket.io-client'
+import { useReady } from './react'
 
 export type Event = {
     event: string
@@ -35,56 +36,41 @@ export function SocketIOProvider({
     const [socketOpts, setSocketOpts] = useState<SocketOpts>({})
     const [events, setEvents] = useState<Event[]>([])
     const [listeners, setListeners] = useState<Listener[]>([])
-    console.log("spawn url", url)
+    const ready = useReady()
     useEffect(() => {
-        console.log("socket exists", socket)
-        if (!socket && url) {
+        if (!socket && url && ready) {
             const backendUrl = new URL(url)
             const path =
             backendUrl.pathname[backendUrl.pathname.length - 1] === '/'
                 ? backendUrl.pathname.substring(0, backendUrl.pathname.length - 1)
                 : backendUrl.pathname
             const newSocketOpts = path ? { ...socketOpts, path: `${path}/socket.io/` } : socketOpts
-            setSocketOpts({
-                hostname: 'localhost',
-                path: '/socket.io',
-                port: '8080',
-                secure: false
-            })
-            console.log("url origin", backendUrl.origin)
-            console.log("socket options", socketOpts)
-            let socketConnection = io(backendUrl.origin, socketOpts)
+            let socketConnection = io(backendUrl.origin, newSocketOpts)
+            setSocketOpts(newSocketOpts)
             setSocket(socketConnection)
         }
-    }, [url]);
+        if(socket && ready) {
+            socket.connect();
+            while (events.length > 0) {
+                const currentEvent = events.shift();
+                if(currentEvent?.event && currentEvent?.args) {
+                    socket.emit(currentEvent.event, JSON.parse(currentEvent.args));
+                }
+            }
+            while(listeners.length > 0) {
+                const currentListener = listeners.shift();
+                if(currentListener?.event && currentListener?.cb) {
+                    socket.on(currentListener.event, currentListener.cb);
+                }
+            }
+        }
+        return () => {
+            if(socket) {
+                socket.disconnect();
+            }
+        };
+    }, [url, ready]);
 
-
-    // useEffect(() => {
-    //     if(socket && ready) {
-    //         socket.connect();
-    //         while (events.length > 0) {
-    //             const currentEvent = events.shift();
-    //             if(currentEvent?.event && currentEvent?.args) {
-    //                 socket.emit(currentEvent.event, JSON.parse(currentEvent.args));
-    //             }
-    //         }
-    //         while(listeners.length > 0) {
-    //             const currentListener = listeners.shift();
-    //             if(currentListener?.event && currentListener?.cb) {
-    //                 socket.on(currentListener.event, currentListener.cb);
-    //             }
-    //         }
-    //     } else {
-    //         let socket = io(url)
-    //         setSocket(socket)
-    //     }
-
-    //     return () => {
-    //         if(socket) {
-    //             socket.disconnect();
-    //         }
-    //     };
-    // }, [url, ready])
     return (
       <SocketIOContext.Provider value={{socket, events, setEvents, listeners, setListeners}}>
         {socket ? children : null}
@@ -92,27 +78,42 @@ export function SocketIOProvider({
     )
   }
 
-// export function useSend<T>(): (newEvent: string, msg: T) => void {
-//     const {socket, setEvents}= useContext(SocketIOContext)
-//     if (!socket) throw new Error('useReady must be used within a SessionBackendContext / Provider')
-//     const ready = useReady()
+export function useSend<T>(): (newEvent: string, msg: T) => void {
+    const {socket, setEvents}= useContext(SocketIOContext)
+    if (!socket) throw new Error('socket must be used within a SocketIOContext / Provider')
+    const ready = useReady()
 
-//     return (newEvent: string, msg: T) => {
-//         if(ready) {
-//             socket.emit(newEvent, msg)
-//         } else {
-//             setEvents((prevEvents) => [...prevEvents, {event: newEvent, args: JSON.stringify(msg)}])
-//         }
-//     }
-//   }
+    return (newEvent: string, msg: T) => {
+        if(ready) {
+            console.log('ready and emiting event', newEvent, msg)
+            socket.emit(newEvent, msg)
+        } else {
+            console.log('not ready emiting event', newEvent, msg)
+            setEvents((prevEvents) => [...prevEvents, {event: newEvent, args: JSON.stringify(msg)}])
+        }
+    }
+  }
 
-//   export function useEventListener<T>(newEvent: Event, cb: (msg: T) => void) {
-//     const {socket, setListeners}= useContext(SocketIOContext)
-//     if (!socket) throw new Error('useReady must be used within a SessionBackendContext / Provider')
-//     const ready = useReady()
-//     if(ready) {
-//         socket.emit(newEvent?.event, ...newEvent.args)
-//     } else {
-//         setListeners((listeners) => [...listeners, {event: newEvent.event, cb}])
-//     }
-//   }
+  export function useEventListener<T>(newEvent: string, cb: (msg: T) => void) {
+    const {socket, listeners, setListeners}= useContext(SocketIOContext)
+    if (!socket) throw new Error('socket must be used within a SocketIOContext / Provider')
+    const ready = useReady()
+    useEffect(() => {
+        if (!cb) return
+        if(ready) {
+            socket.on(newEvent, cb)
+        } else {
+            setListeners((listeners) => [...listeners, {event: newEvent, cb}])
+        }
+        return () => {
+            if (ready) {
+                socket?.off(newEvent, cb)
+              } else {
+                const idx = listeners.findIndex(
+                  (listener) => listener.event === newEvent && listener.cb === cb,
+                )
+                if (idx) setListeners(listeners.splice(idx, 1))
+              }
+        }
+      }, [cb, ready, newEvent, socket, setListeners, listeners])
+  }

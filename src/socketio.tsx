@@ -85,10 +85,8 @@ export function useSend<T>(): (newEvent: string, msg: T) => void {
 
     return (newEvent: string, msg: T) => {
         if(ready) {
-            console.log('ready and emiting event', newEvent, msg)
             socket.emit(newEvent, msg)
         } else {
-            console.log('not ready emiting event', newEvent, msg)
             setEvents((prevEvents) => [...prevEvents, {event: newEvent, args: JSON.stringify(msg)}])
         }
     }
@@ -108,7 +106,8 @@ export function useSend<T>(): (newEvent: string, msg: T) => void {
         return () => {
             if (ready) {
                 socket?.off(newEvent, cb)
-              } else {
+              }
+              else {
                 const idx = listeners.findIndex(
                   (listener) => listener.event === newEvent && listener.cb === cb,
                 )

@@ -2,12 +2,19 @@ import 'server-only'
 import 'isomorphic-fetch' // fetch polyfill for older versions of Node
 import { SpawnResult } from './types'
 
-export type JamsocketInitOptions = {
-  account: string
-  token: string
-  service: string
-  apiUrl?: string
+export type JamsocketDevInitOptions = {
+  dev: true
+  port?: number
 }
+
+export type JamsocketInitOptions =
+  | {
+      account: string
+      token: string
+      service: string
+      apiUrl?: string
+    }
+  | JamsocketDevInitOptions
 
 export type JamsocketSpawnOptions = {
   tag?: string
@@ -26,11 +33,38 @@ type JamsocketApiSpawnBody = {
   port?: number
 }
 
+const JAMSOCKET_DEV_PORT = 8080
 const JAMSOCKET_API = 'https://api.jamsocket.com'
 
+function isJamsocketDevInitOptions(opts: any): opts is JamsocketDevInitOptions {
+  return opts.dev === true
+}
+
+function validatePort(port: any): number {
+  if (!Number.isInteger(port)) {
+    throw new Error(`Jamsocket dev port must be an integer, got ${typeof port}`)
+  }
+  return port
+}
+
 export function init(opts: JamsocketInitOptions) {
-  const { account, token, service } = opts
-  const apiUrl = opts.apiUrl || JAMSOCKET_API
+  let account: string
+  let token: string
+  let service: string
+  let apiUrl: string
+
+  if (isJamsocketDevInitOptions(opts)) {
+    account = '-'
+    token = '-'
+    service = '-'
+    const port = opts.port ? validatePort(opts.port) : JAMSOCKET_DEV_PORT
+    apiUrl = `http://localhost:${port}`
+  } else {
+    account = opts.account
+    token = opts.token
+    service = opts.service
+    apiUrl = opts.apiUrl || JAMSOCKET_API
+  }
 
   return async function spawn(spawnOpts: JamsocketSpawnOptions = {}): Promise<SpawnResult> {
     const reqBody: JamsocketApiSpawnBody = {}

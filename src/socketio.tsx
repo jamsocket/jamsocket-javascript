@@ -35,8 +35,9 @@ export function SocketIOProvider({
     const [socketOpts, setSocketOpts] = useState<SocketOpts>({})
     const [events, setEvents] = useState<Event[]>([])
     const [listeners, setListeners] = useState<Listener[]>([])
-    console.log(url)
+    console.log("spawn url", url)
     useEffect(() => {
+        console.log("socket exists", socket)
         if (!socket && url) {
             const backendUrl = new URL(url)
             const path =
@@ -44,7 +45,14 @@ export function SocketIOProvider({
                 ? backendUrl.pathname.substring(0, backendUrl.pathname.length - 1)
                 : backendUrl.pathname
             const newSocketOpts = path ? { ...socketOpts, path: `${path}/socket.io/` } : socketOpts
-            setSocketOpts(newSocketOpts)
+            setSocketOpts({
+                hostname: 'localhost',
+                path: '/socket.io',
+                port: '8080',
+                secure: false
+            })
+            console.log("url origin", backendUrl.origin)
+            console.log("socket options", socketOpts)
             let socketConnection = io(backendUrl.origin, socketOpts)
             setSocket(socketConnection)
         }

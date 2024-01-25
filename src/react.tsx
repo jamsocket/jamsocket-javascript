@@ -13,7 +13,7 @@ export function SessionBackendProvider({
 }) {
   const { url, statusUrl } = spawnResult
   const [backend, setBackend] = useState<SessionBackend | null>(null)
-  console.log("from lib", backend)
+
   useEffect(() => {
     setBackend(new SessionBackend(url, statusUrl))
     return () => {

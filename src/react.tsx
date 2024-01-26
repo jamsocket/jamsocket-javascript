@@ -16,6 +16,7 @@ export function SessionBackendProvider({
 
   useEffect(() => {
     setBackend(new SessionBackend(url, statusUrl))
+    console.log('session')
     return () => {
       console.log('destroying backend')
       backend?.destroy()

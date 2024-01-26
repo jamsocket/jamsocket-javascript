@@ -31,9 +31,7 @@ export function SocketIOProvider({ url, children }: { url: string; children: Rea
   const [events, setEvents] = useState<Event[]>([])
   const [listeners, setListeners] = useState<Listener[]>([])
   const ready = useReady()
-  console.log('ready', ready)
   useEffect(() => {
-    console.log('url', url)
     if (!socket && url) {
       const backendUrl = new URL(url)
       const path =
@@ -50,10 +48,9 @@ export function SocketIOProvider({ url, children }: { url: string; children: Rea
         socket.disconnect()
       }
     }
-  }, [url])
+  }, [url, socket])
 
   useEffect(() => {
-    console.log('in other')
     if (socket && ready) {
         socket.connect()
         events.forEach((event) => {
@@ -70,18 +67,6 @@ export function SocketIOProvider({ url, children }: { url: string; children: Rea
             }
           });
           setListeners([]);
-        // while (events.length > 0) {
-        //   const currentEvent = events.shift()
-        //   if (currentEvent?.event && currentEvent?.args) {
-        //     socket.emit(currentEvent.event, JSON.parse(currentEvent.args))
-        //   }
-        // }
-        // while (listeners.length > 0) {
-        //   const currentListener = listeners.shift()
-        //   if (currentListener?.event && currentListener?.cb) {
-        //     socket.on(currentListener.event, currentListener.cb)
-        //   }
-        // }
       }
   }, [socket, ready])
 
@@ -106,26 +91,33 @@ export function useSend<T>(): (newEvent: string, msg: T) => void {
   }
 }
 
-export function useEventListener<T>(newEvent: string, cb: (msg: T) => void) {
-  const { socket, listeners, setListeners } = useContext(SocketIOContext)
-  if (!socket) throw new Error('socket must be used within a SocketIOContext / Provider')
-  const ready = useReady()
-  useEffect(() => {
-    if (!cb) return
-    if (ready) {
-      socket.on(newEvent, cb)
-    } else {
-      setListeners((listeners) => [...listeners, { event: newEvent, cb }])
+export function useEventListener<T>(event: string, callback: (msg: T) => void) {
+    const { socket, setListeners } = useContext(SocketIOContext);
+    const ready = useReady();
+    if (!socket) {
+      throw new Error('useEventListener must be used within a SocketIOContext/Provider');
     }
-    return () => {
-      if (ready) {
-        socket?.off(newEvent, cb)
-      } else {
-        const idx = listeners.findIndex(
-          (listener) => listener.event === newEvent && listener.cb === cb,
-        )
-        if (idx) setListeners(listeners.splice(idx, 1))
-      }
-    }
-  }, [cb, ready, newEvent, socket, setListeners, listeners])
-}
+    useEffect(() => {
+        if (ready) {
+            socket.on(event, callback);
+        }
+        else {
+            setListeners((prevListeners) => [...prevListeners, { event, cb: callback }]);
+        }
+        return () => {
+            if (ready) {
+                socket.off(event, callback);
+            }
+            else {
+                setListeners((prevListeners) => {
+                    const newListeners = [...prevListeners];
+                    const index = newListeners.findIndex((listener) => listener.event === event);
+                    if (index > -1) {
+                        newListeners.splice(index, 1);
+                    }
+                    return newListeners;
+                });
+            }
+        };
+    }, [ready]);
+  }

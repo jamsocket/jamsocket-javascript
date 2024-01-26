@@ -31,8 +31,10 @@ export function SocketIOProvider({ url, children }: { url: string; children: Rea
   const [events, setEvents] = useState<Event[]>([])
   const [listeners, setListeners] = useState<Listener[]>([])
   const ready = useReady()
+  console.log('ready', ready)
   useEffect(() => {
-    if (!socket && url && ready) {
+    console.log('url', url)
+    if (!socket && url) {
       const backendUrl = new URL(url)
       const path =
         backendUrl.pathname[backendUrl.pathname.length - 1] === '/'
@@ -43,27 +45,45 @@ export function SocketIOProvider({ url, children }: { url: string; children: Rea
       setSocketOpts(newSocketOpts)
       setSocket(socketConnection)
     }
-    if (socket && ready) {
-      socket.connect()
-      while (events.length > 0) {
-        const currentEvent = events.shift()
-        if (currentEvent?.event && currentEvent?.args) {
-          socket.emit(currentEvent.event, JSON.parse(currentEvent.args))
-        }
-      }
-      while (listeners.length > 0) {
-        const currentListener = listeners.shift()
-        if (currentListener?.event && currentListener?.cb) {
-          socket.on(currentListener.event, currentListener.cb)
-        }
-      }
-    }
     return () => {
       if (socket) {
         socket.disconnect()
       }
     }
-  }, [url, ready])
+  }, [url])
+
+  useEffect(() => {
+    console.log('in other')
+    if (socket && ready) {
+        socket.connect()
+        events.forEach((event) => {
+            if (event?.event && event?.args) {
+              socket.emit(event.event, JSON.parse(event.args));
+            }
+          });
+
+          setEvents([]); // Clear events after processing
+
+          listeners.forEach((listener) => {
+            if (listener?.event && listener?.cb) {
+              socket.on(listener.event, listener.cb);
+            }
+          });
+          setListeners([]);
+        // while (events.length > 0) {
+        //   const currentEvent = events.shift()
+        //   if (currentEvent?.event && currentEvent?.args) {
+        //     socket.emit(currentEvent.event, JSON.parse(currentEvent.args))
+        //   }
+        // }
+        // while (listeners.length > 0) {
+        //   const currentListener = listeners.shift()
+        //   if (currentListener?.event && currentListener?.cb) {
+        //     socket.on(currentListener.event, currentListener.cb)
+        //   }
+        // }
+      }
+  }, [socket, ready])
 
   return (
     <SocketIOContext.Provider value={{ socket, events, setEvents, listeners, setListeners }}>

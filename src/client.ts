@@ -14,6 +14,13 @@ export class SessionBackend {
     this.waitUntilReady(statusUrl)
   }
 
+  // Private method to set the session as ready and execute callbacks
+  private _setReady() {
+    this._isReady = true
+    this._onReady.forEach((cb) => cb())
+    this._onReady = []
+  }
+
   private waitUntilReady = async (statusUrl: string) => {
     const res = await fetch(statusUrl, { mode: 'cors', cache: 'no-store' })
     if (!res.ok) {
@@ -24,9 +31,7 @@ export class SessionBackend {
     const status = await res.text()
 
     if (status.includes('Ready')) {
-      this._isReady = true
-      this._onReady.forEach((cb) => cb())
-      this._onReady = []
+      this._setReady()
       return
     }
     if (!status.includes('Loading') && !status.includes('Starting')) {
@@ -62,9 +67,7 @@ export class SessionBackend {
           console.error(`Error parsing status stream message as JSON: "${text}"`, e)
         }
         if (data?.state === 'Ready') {
-          this._isReady = true
-          this._onReady.forEach((cb) => cb())
-          this._onReady = []
+          this._setReady()
           this.destroyStatusStream()
         }
       }

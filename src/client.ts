@@ -17,7 +17,7 @@ export class SessionBackend {
   // Private method to set the session as ready and execute callbacks
   private _setReady() {
     this._isReady = true
-    this._onReady.forEach(cb => cb())
+    this._onReady.forEach((cb) => cb())
     this._onReady = []
   }
 

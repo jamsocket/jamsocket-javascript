@@ -1,13 +1,4 @@
-import { io, Socket, ManagerOptions, SocketOptions } from 'socket.io-client'
-
-export type SocketOpts = Partial<ManagerOptions & SocketOptions>
-export type Event = {
-  event: string
-  args: string // these are stringified args - to freeze them in place
-}
-export type EventHandler = (...args: any[]) => void
 export type Status = string
-export type Listener = { event: string; cb: EventHandler }
 export type StatusStreamEvent = { state: Status; time: string }
 
 export class SessionBackend {
@@ -15,16 +6,19 @@ export class SessionBackend {
   readonly statuses: Status[] = []
   private _isReady: boolean = false
   private _onReady: (() => void)[] = []
-  private socket: Socket | null = null
-  private listeners: Listener[] = []
-  private events: Event[] = []
 
   constructor(
     readonly url: string,
     readonly statusUrl: string,
-    readonly socketOpts?: SocketOpts,
   ) {
     this.waitUntilReady(statusUrl)
+  }
+
+  // Private method to set the session as ready and execute callbacks
+  private _setReady() {
+    this._isReady = true
+    this._onReady.forEach((cb) => cb())
+    this._onReady = []
   }
 
   private waitUntilReady = async (statusUrl: string) => {
@@ -35,8 +29,9 @@ export class SessionBackend {
       )
     }
     const status = await res.text()
+
     if (status.includes('Ready')) {
-      this.openSocket()
+      this._setReady()
       return
     }
     if (!status.includes('Loading') && !status.includes('Starting')) {
@@ -72,7 +67,7 @@ export class SessionBackend {
           console.error(`Error parsing status stream message as JSON: "${text}"`, e)
         }
         if (data?.state === 'Ready') {
-          this.openSocket()
+          this._setReady()
           this.destroyStatusStream()
         }
       }
@@ -88,7 +83,6 @@ export class SessionBackend {
 
   public destroy() {
     this.destroyStatusStream()
-    this.socket?.disconnect()
   }
 
   public isReady() {
@@ -105,56 +99,5 @@ export class SessionBackend {
       if (this.isReady()) return
       this._onReady = this._onReady.filter((c) => c !== cb)
     }
-  }
-
-  public on(event: string, cb: EventHandler) {
-    if (this.isReady()) {
-      this.socket?.on(event, cb)
-    } else {
-      this.listeners.push({ event, cb })
-    }
-  }
-
-  public off(event: string, cb: EventHandler) {
-    if (this.isReady()) {
-      this.socket?.off(event, cb)
-    } else {
-      const idx = this.listeners.findIndex(
-        (listener) => listener.event === event && listener.cb === cb,
-      )
-      if (idx) this.listeners.splice(idx, 1)
-    }
-  }
-
-  public send(event: string, ...args: any[]) {
-    if (this.isReady()) {
-      this.socket?.emit(event, ...args)
-    } else {
-      this.events.push({ event, args: JSON.stringify(args) })
-    }
-  }
-
-  private openSocket() {
-    const url = new URL(this.url)
-    const path =
-      url.pathname[url.pathname.length - 1] === '/'
-        ? url.pathname.substring(0, url.pathname.length - 1)
-        : url.pathname
-    const socketOpts = path ? { ...this.socketOpts, path: `${path}/socket.io/` } : this.socketOpts
-    this.socket = io(url.origin, socketOpts)
-    this.socket.on('connect', () => {
-      this._isReady = true
-      this._onReady.forEach((cb) => cb())
-      this._onReady = []
-
-      while (this.listeners.length > 0) {
-        const { event, cb } = this.listeners.shift()!
-        this.on(event, cb)
-      }
-      while (this.events.length > 0) {
-        const { event, args } = this.events.shift()!
-        this.send(event, ...JSON.parse(args))
-      }
-    })
   }
 }

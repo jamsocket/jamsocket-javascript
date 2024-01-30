@@ -15,24 +15,17 @@ export const SocketIOContext = createContext<{
   socket: Socket | null
   events: Event[]
   setEvents: Dispatch<SetStateAction<Event[]>>
-  listeners: Listener[]
-  setListeners: Dispatch<SetStateAction<Listener[]>>
 }>({
   socket: null,
   events: [],
   setEvents: () => {},
-  listeners: [],
-  setListeners: () => {},
 })
 
 export function SocketIOProvider({ url, children }: { url: string; children: React.ReactNode }) {
   const [socket, setSocket] = useState<Socket | null>(null)
   const [socketOpts, setSocketOpts] = useState<SocketOpts>({})
   const [events, setEvents] = useState<Event[]>([])
-  const [listeners, setListeners] = useState<Listener[]>([])
   const ready = useReady()
-  console.log(events)
-  console.log(listeners)
   useEffect(() => {
     if (!socket && url) {
       const backendUrl = new URL(url)
@@ -62,18 +55,11 @@ export function SocketIOProvider({ url, children }: { url: string; children: Rea
           });
 
           setEvents([]); // Clear events after processing
-
-          listeners.forEach((listener) => {
-            if (listener?.event && listener?.cb) {
-              socket.on(listener.event, listener.cb);
-            }
-          });
-          setListeners([]);
       }
   }, [socket, ready])
 
   return (
-    <SocketIOContext.Provider value={{ socket, events, setEvents, listeners, setListeners }}>
+    <SocketIOContext.Provider value={{ socket, events, setEvents }}>
       {socket ? children : null}
     </SocketIOContext.Provider>
   )
@@ -94,32 +80,21 @@ export function useSend<T>(): (newEvent: string, msg: T) => void {
 }
 
 export function useEventListener<T>(event: string, callback: (msg: T) => void) {
-    const { socket, setListeners } = useContext(SocketIOContext);
+    const { socket } = useContext(SocketIOContext);
     const ready = useReady();
     if (!socket) {
       throw new Error('useEventListener must be used within a SocketIOContext/Provider');
     }
     useEffect(() => {
         if (ready) {
+          console.log('on  ready')
             socket.on(event, callback);
-        }
-        else {
-            setListeners((prevListeners) => [...prevListeners, { event, cb: callback }]);
         }
         return () => {
             if (ready) {
+              console.log('off  ready')
                 socket.off(event, callback);
             }
-            else {
-                setListeners((prevListeners) => {
-                    const newListeners = [...prevListeners];
-                    const index = newListeners.findIndex((listener) => listener.event === event);
-                    if (index > -1) {
-                        newListeners.splice(index, 1);
-                    }
-                    return newListeners;
-                });
-            }
         };
-    }, [ready, event, callback]);
+    }, [ready, event]);
   }

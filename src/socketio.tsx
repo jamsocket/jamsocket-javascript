@@ -1,4 +1,12 @@
-import { useContext, useEffect, useState, createContext, Dispatch, SetStateAction } from 'react'
+import {
+  useContext,
+  useRef,
+  useEffect,
+  useState,
+  createContext,
+  Dispatch,
+  SetStateAction,
+} from 'react'
 import { io, Socket, ManagerOptions, SocketOptions } from 'socket.io-client'
 import { useReady } from './react'
 
@@ -23,7 +31,6 @@ export const SocketIOContext = createContext<{
 
 export function SocketIOProvider({ url, children }: { url: string; children: React.ReactNode }) {
   const [socket, setSocket] = useState<Socket | null>(null)
-  const [socketOpts, setSocketOpts] = useState<SocketOpts>({})
   const [events, setEvents] = useState<Event[]>([])
   const ready = useReady()
   useEffect(() => {
@@ -33,9 +40,8 @@ export function SocketIOProvider({ url, children }: { url: string; children: Rea
         backendUrl.pathname[backendUrl.pathname.length - 1] === '/'
           ? backendUrl.pathname.substring(0, backendUrl.pathname.length - 1)
           : backendUrl.pathname
-      const newSocketOpts = path ? { ...socketOpts, path: `${path}/socket.io/` } : socketOpts
-      let socketConnection = io(backendUrl.origin, newSocketOpts)
-      setSocketOpts(newSocketOpts)
+      console.log('calling io')
+      let socketConnection = io(backendUrl.origin, { path: `${path}/socket.io/` })
       setSocket(socketConnection)
     }
     return () => {
@@ -47,15 +53,16 @@ export function SocketIOProvider({ url, children }: { url: string; children: Rea
 
   useEffect(() => {
     if (socket && ready) {
-        socket.connect()
-        events.forEach((event) => {
-            if (event?.event && event?.args) {
-              socket.emit(event.event, JSON.parse(event.args));
-            }
-          });
+      console.log('ready giong through events', events)
+      socket.connect()
+      events.forEach((event) => {
+        if (event?.event && event?.args) {
+          socket.emit(event.event, JSON.parse(event.args))
+        }
+      })
 
-          setEvents([]); // Clear events after processing
-      }
+      setEvents([]) // Clear events after processing
+    }
   }, [socket, ready])
 
   return (
@@ -80,21 +87,22 @@ export function useSend<T>(): (newEvent: string, msg: T) => void {
 }
 
 export function useEventListener<T>(event: string, callback: (msg: T) => void) {
-    const { socket } = useContext(SocketIOContext);
-    const ready = useReady();
-    if (!socket) {
-      throw new Error('useEventListener must be used within a SocketIOContext/Provider');
-    }
-    useEffect(() => {
-        if (ready) {
-          console.log('on  ready')
-            socket.on(event, callback);
-        }
-        return () => {
-            if (ready) {
-              console.log('off  ready')
-                socket.off(event, callback);
-            }
-        };
-    }, [ready, event]);
+  const { socket } = useContext(SocketIOContext)
+  const ready = useReady()
+  const hasRun = useRef(false)
+  if (!socket) {
+    throw new Error('useEventListener must be used within a SocketIOContext/Provider')
   }
+  useEffect(() => {
+    if (hasRun.current) {
+      return
+    }
+    if (!ready) {
+      return
+    }
+    socket.on(event, callback)
+    return () => {
+      socket.off(event, callback)
+    }
+  }, [ready, event])
+}

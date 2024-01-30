@@ -31,6 +31,8 @@ export function SocketIOProvider({ url, children }: { url: string; children: Rea
   const [events, setEvents] = useState<Event[]>([])
   const [listeners, setListeners] = useState<Listener[]>([])
   const ready = useReady()
+  console.log(events)
+  console.log(listeners)
   useEffect(() => {
     if (!socket && url) {
       const backendUrl = new URL(url)
@@ -119,5 +121,5 @@ export function useEventListener<T>(event: string, callback: (msg: T) => void) {
                 });
             }
         };
-    }, [ready]);
+    }, [ready, event, callback]);
   }

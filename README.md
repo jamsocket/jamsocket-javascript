@@ -54,7 +54,8 @@ import { SessionBackendProvider } from '@jamsocket/javascript/react'
 ```
 
 ```js
-import { useEventListener, useReady, useSend } from '@jamsocket/javascript/react'
+import { useReady } from '@jamsocket/javascript/react'
+import { useEventListener, useSend } from '@jamsocket/javascript/socketio'
 
 function MyComponent() {
   const sendEvent = useSend()

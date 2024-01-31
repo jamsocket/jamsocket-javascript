@@ -1,11 +1,4 @@
-import {
-  useContext,
-  useEffect,
-  useState,
-  createContext,
-  Dispatch,
-  SetStateAction,
-} from 'react'
+import { useContext, useEffect, useState, createContext, Dispatch, SetStateAction } from 'react'
 import { io, Socket } from 'socket.io-client'
 import { useReady } from './react'
 
@@ -37,7 +30,7 @@ export function SocketIOProvider({ url, children }: { url: string; children: Rea
           socketConnection.emit(event.event, JSON.parse(event.args))
         }
       })
-      setEvents([]) // Clear events after processing
+      setEvents([])
       setSocket(socketConnection)
       return () => {
         socketConnection.disconnect()
@@ -46,9 +39,7 @@ export function SocketIOProvider({ url, children }: { url: string; children: Rea
   }, [url, ready])
 
   return (
-    <SocketIOContext.Provider value={{ socket, setEvents }}>
-      {children}
-    </SocketIOContext.Provider>
+    <SocketIOContext.Provider value={{ socket, setEvents }}>{children}</SocketIOContext.Provider>
   )
 }
 

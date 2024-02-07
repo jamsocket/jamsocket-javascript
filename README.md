@@ -18,8 +18,7 @@ const spawnBackend = init({
 })
 
 // this spawns a backend via the Jamsocket API and returns a URL you can
-// use to connect to your backend - or pass the spawnResult to a SessionBackendProvider
-// and use Jamsocket's React hooks to interact with your session backend
+// use to connect to your backend - or pass the spawnResult to a SessionBackendProvider and SocketIOProvider
 const spawnResult = await spawnBackend()
 
 // you may also pass in any of the following spawn options
@@ -47,7 +46,8 @@ const spawnBackend = init({
 import { SessionBackendProvider } from '@jamsocket/javascript/react'
 import { SocketIOProvider } from '@jamsocket/javascript/socketio'
 
-// wrap a component in a SessionBackendProvider and SocketIOProvider so the child components can use Jamsocket hooks for interacting with the session backend
+// wrap a component in a SessionBackendProvider so the child components can use Jamsocket hooks for interacting with the session backend
+// wrap a component in a SocketIOProvider so the child components can use hooks for sending and receiving events with the session backend
 <SessionBackendProvider spawnResult={spawnResult}>
   <SocketIOProvider url={spawnResult.url}>
     <MyComponent />
@@ -60,6 +60,8 @@ import { useReady } from '@jamsocket/javascript/react'
 import { useEventListener, useSend } from '@jamsocket/javascript/socketio'
 
 function MyComponent() {
+  // check when the session backend is ready using useReady
+  const ready = useReady()
   const sendEvent = useSend()
   function onMouseMove() {
     // send an event message to your session backend over websockets

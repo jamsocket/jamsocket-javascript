@@ -45,11 +45,13 @@ const spawnBackend = init({
 
 ```jsx
 import { SessionBackendProvider } from '@jamsocket/javascript/react'
+import { SocketIOProvider } from '@jamsocket/javascript/socketio'
 
-// wrap a component in a SessionBackendProvider so the child components
-// can use Jamsocket hooks for interacting with the session backend (like useEventListener, useSend, etc)
+// wrap a component in a SessionBackendProvider and SocketIOProvider so the child components can use Jamsocket hooks for interacting with the session backend
 <SessionBackendProvider spawnResult={spawnResult}>
-  <MyComponent />
+  <SocketIOProvider url={spawnResult.url}>
+    <MyComponent />
+  </SocketIOProvider>
 </SessionBackendProvider>
 ```
 
